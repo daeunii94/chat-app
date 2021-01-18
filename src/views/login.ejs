@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title><%=title%>:Login</title>
+    <script src="https://cdn.bnr.co.kr/externel_modules/bluebird/3.3.5/bluebird.min.js"></script>
+    <script src="https://cdn.bnr.co.kr/externel_modules/polyfill/v3/polyfill.min.js"></script>
+    <script src="https://cdn.bnr.co.kr/externel_modules/jquery/3.1.1/jquery-3.1.1.min.js"></script>
+    <!-- bootstrap + bootstrap-table -->
+    <script src="https://cdn.bnr.co.kr/externel_modules/popper/1.14.7/popper.min.js"></script>
+    <script src="https://cdn.bnr.co.kr/externel_modules/bootstrap/4.3.1/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.bnr.co.kr/externel_modules/bootstrap/4.3.1/bootstrap.min.css" />
+  </head>
+  <body>
+    <div id="div_bodyWrapper">
+      <div style="width:100%;height:100%;display:flex; justify-content: center; align-items: center;">
+        
+        <form id="loginform"style="width:25%; height:60%; border:1px solid black; display:block; text-align:center;" method="post" action="/api/v1/auth/login">
+            <h1>로그인</h1>
+            <div>
+              <input id="id" name="userIdEmail" type="email" placeholder="email">
+            </div>
+            <div>
+              <input id="pw"name="userPassword" type="password" placeholder="pw">
+            </div>
+            <div>
+              <button id="btn_login"type="button">로그인</button>
+            </div>
+            <div style="border-top: 1px solid rgb(230,230,230);">
+              <a href="/signup" target="_blank">가입하기</a>
+            </div>
+            <div>
+              <%=msg%>
+            </div>
+        </form>
+        
+      </div>
+    </div>
+    <script>
+  
+      $(document).ready(function(){
+        $('#btn_login').click(function(){
+          if($('#id').val()&&$('#pw').val()){
+            $('#loginform').submit();
+          }  
+          else{
+            alert("id 와 pw 를 채워주세요");
+          }
+        });
+      });
+    </script>
+  </body>
+</html>

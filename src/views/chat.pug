@@ -1,0 +1,148 @@
+extends layout
+
+block content
+  h1= title
+  a#exit-btn(href='/chatting') 방 나가기
+  fieldset
+    legend 채팅 내용
+    #chat-list
+      for chat in chats
+        if chat.chatUserIdx === user
+          .mine(style='color:' + chat.chatUserColor)
+            div= chat.chatUserIdx
+            if chat.chatPhoto
+              img(src='/photo/' + chat.chatPhoto)
+            else if chat.chatFile
+              file(src='/file/' + chat.chatFile)
+            else
+              div= chat.chatDetail
+        else if chat.chatUserIdx === 'system'
+          .system
+            div= chat.chatDetail
+        else
+          .other(style='color:' + chat.chatUserColor)
+            div= chat.chatUserIdx
+            if chat.chatPhoto
+              img(src='/photo/' + chat.chatPhoto)
+            else if chat.chatFile
+              file(src='/file/' + chat.chatFile)
+            else
+              div= chat.chat
+  form#chat-form(action='/chat' method='post' enctype='multipart/form-data')
+    label(for='file') 파일 업로드
+    input#file(type='file' name='file' accept='application/msword, application/vnd.ms-excel, application/vnd.ms-powerpoint, text/plain, application/pdf')
+    label(for='photo') 사진 업로드
+    input#photo(type='file' name='photo' accept='image/jpeg, image/png, image/gif, image/bmp')
+    input#chat(name='chat')
+    button(type='submit') 전송
+  script(src='/socket.io/socket.io.js')
+  script.
+    
+    var socket = io.connect('http://localhost:4000/chat', {
+      path: '/socket.io'
+    });
+     
+    
+    socket.on('join', (data)=> {
+      console.log("chat data")
+      console.log(data)
+      var div = document.createElement('div');
+      div.classList.add('system');
+      var chat = document.createElement('div');
+      div.textContent = data.chat;
+      div.appendChild(chat);
+      document.querySelector('#chat-list').appendChild(div);
+    });
+    socket.on('exit', function (data) {
+      var div = document.createElement('div');
+      div.classList.add('system');
+      var chat = document.createElement('div');
+      div.textContent = data.chat;
+      div.appendChild(chat);
+      document.querySelector('#chat-list').appendChild(div);
+    });
+    socket.on('chat', function (data) { 
+      var div = document.createElement('div');
+      if (data.chatUserIdx === '#{user}') {
+        div.classList.add('mine');
+      } else {
+        div.classList.add('other');
+      }
+      var name = document.createElement('div');
+      name.textContent = data.chatUserIdx;
+      div.appendChild(name);
+      if (data.chatDetail) {
+        var chat = document.createElement('div');
+        chat.textContent = data.chatDetail;
+        div.appendChild(chat);
+      } else if(data.chatPhoto) {
+        //console.log(data.chatPhoto)
+        var photo = document.createElement('img');
+        photo.src = '../photo/' + data.chatPhoto;
+        console.log("src")
+
+        div.appendChild(photo);
+      } else {
+        var file = document.createElement('file');
+        file.src ='http://localhost:4000/file/' + data.chatFile;
+        console.log("src")
+
+        div.appendChild(file);
+      }
+      div.style.color = data.chatUserColor;
+      document.querySelector('#chat-list').appendChild(div);
+    });
+
+    document.querySelector('#chat-form').addEventListener('submit', function (e) {
+      e.preventDefault();
+      if (e.target.chat.value) {
+        var xhr = new XMLHttpRequest();
+        xhr.onload = function () {
+          if (xhr.status === 200) {
+            e.target.chat.value = '';
+          } else {
+            console.error(xhr.responseText);
+          }
+        };
+        xhr.open('POST', '/room/#{room.chatRoomIdx}/chat');
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.send(JSON.stringify({ chat: this.chat.value }));
+      }
+    });
+
+    document.querySelector('#photo').addEventListener('change', function (e) {
+      var formData = new FormData();
+      var xhr = new XMLHttpRequest();
+      console.log("e.target.files");
+      //console.log(e.target.files);
+      formData.append('photo', e.target.files[0]);//formData에 사진이 담김
+      xhr.onload = function () {
+        if (xhr.status === 200) {
+          console.log(e.target.files[0])
+          e.target.file = null;
+        } else {
+          console.error(xhr.responseText);
+        }
+      };
+      xhr.open('POST', '/room/#{room.chatRoomIdx}/photo');
+      xhr.send(formData);
+    });
+
+    //file upload
+    document.querySelector('#file').addEventListener('change', function (e) {
+      var formData = new FormData();
+      var xhr = new XMLHttpRequest();
+      console.log("e.target.files");
+      //console.log(e.target.files);
+      formData.append('file', e.target.files[0]);//formData에 사진이 담김
+      xhr.onload = function () {
+        if (xhr.status === 200) {
+          console.log(e.target.files[0])
+          e.target.file = null;
+        } else {
+          console.error(xhr.responseText);
+        }
+      };
+      xhr.open('POST', '/room/#{room.chatRoomIdx}/file');
+      xhr.send(formData);
+    });

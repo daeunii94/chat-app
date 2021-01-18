@@ -1,0 +1,13 @@
+# Dependency directories
+node_modules/
+
+# configs && build file
+build/
+src/configs/*
+
+# dotenv environment variables file
+.env
+.env.dev
+
+# vscode
+.vscode
